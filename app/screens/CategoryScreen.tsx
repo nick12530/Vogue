@@ -1,43 +1,56 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  TextInput, 
-  StyleSheet, 
-  ScrollView,
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  StyleSheet,
   Image,
   SafeAreaView,
-  FlatList
+  FlatList,
+  Dimensions,
 } from 'react-native';
-import { Feather, AntDesign, MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { Feather, AntDesign } from '@expo/vector-icons';
+
+const { width } = Dimensions.get('window');
 
 // Define proper types for our data
 type Product = {
   id: string;
   name: string;
   price: string;
-  image: string | null;
+  image: any; // Changed to any to accept require() images
 };
 
 type CategoryName = 'men' | 'women' | 'children' | 'sneakers';
-type SubcategoryMap = Record<CategoryName, string[]>;
-type ProductsMap = Record<CategoryName, Record<string, Product[]>>;
+type MenSubcategories = 'official' | 'casual';
+type WomenSubcategories = 'official' | 'casual';
+type ChildrenSubcategories = 'indoors' | 'outdoors';
+type SneakersSubcategories = 'casual' | 'sport';
 
-const Categories: React.FC = () => {
-  // State to track selected category and selected subcategory
+type SubcategoryMap = Record<CategoryName, string[]>;
+type AllSubcategories = MenSubcategories | WomenSubcategories | ChildrenSubcategories | SneakersSubcategories;
+type ProductsMap = {
+  men: Record<MenSubcategories, Product[]>;
+  women: Record<WomenSubcategories, Product[]>;
+  children: Record<ChildrenSubcategories, Product[]>;
+  sneakers: Record<SneakersSubcategories, Product[]>;
+};
+
+const CategoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState<CategoryName | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
-  
-  // Navigation items
-  const navItems = ['home', 'men', 'women', 'cart'];
+  const [cart, setCart] = useState<Product[]>([]); // State to manage cart items
+
+  // Navigation items (updated to include all categories)
+  const navItems = ['home', 'men', 'women', 'children', 'sneakers', 'cart'];
 
   // Category data with updated categories
   const categories = [
-    { id: 1, name: 'Men', path: 'men' as CategoryName, image: null, color: '#3498db' },
-    { id: 2, name: 'Women', path: 'women' as CategoryName, image: null, color: '#e84393' },
-    { id: 3, name: 'Children', path: 'children' as CategoryName, image: null, color: '#f39c12' },
-    { id: 4, name: 'Sneakers', path: 'sneakers' as CategoryName, image: null, color: '#2ecc71' },
+    { id: 1, name: 'Men', path: 'men' as CategoryName, image: require('../../assets/Men.jpg'), color: '#3498db' },
+    { id: 2, name: 'Women', path: 'women' as CategoryName, image: require('../../assets/Women.jpg'), color: '#e84393' },
+    { id: 3, name: 'Children', path: 'children' as CategoryName, image: require('../../assets/Kids.jpg'), color: '#f39c12' },
+    { id: 4, name: 'Sneakers', path: 'sneakers' as CategoryName, image: require('../../assets/Shoes.jpg'), color: '#2ecc71' },
   ];
 
   // Subcategories for each main category with your specified categories
@@ -45,79 +58,66 @@ const Categories: React.FC = () => {
     men: ['Official', 'Casual'],
     women: ['Official', 'Casual'],
     children: ['Indoors', 'Outdoors'],
-    sneakers: ['Casual', 'Sport']
+    sneakers: ['Casual', 'Sport'],
   };
 
-  // Mock products data for each category and subcategory
-  const products: ProductsMap = {
+  const assets: ProductsMap = {
     men: {
       official: [
-        { id: 'm1', name: 'Business Suit', price: '$199.99', image: null },
-        { id: 'm2', name: 'Dress Shirt', price: '$59.99', image: null },
-        { id: 'm3', name: 'Formal Pants', price: '$79.99', image: null },
-        { id: 'm4', name: 'Tie Collection', price: '$29.99', image: null },
+        { id: 'm1', name: 'Business Suit', price: '$199.99', image: require('../../assets/suit.jpg') },
+        { id: 'm2', name: 'Dress Shirt', price: '$59.99', image: require('../../assets/dressshirt.jpg') },
+        { id: 'm3', name: 'Formal Pants', price: '$79.99', image: require('../../assets/pants.jpg') },
+        { id: 'm4', name: 'Tie Collection', price: '$29.99', image: require('../../assets/tie.jpg') },
       ],
       casual: [
-        { id: 'm5', name: 'Jeans', price: '$49.99', image: null },
-        { id: 'm6', name: 'T-Shirt', price: '$19.99', image: null },
-        { id: 'm7', name: 'Polo Shirt', price: '$24.99', image: null },
-        { id: 'm8', name: 'Casual Jacket', price: '$89.99', image: null },
-      ]
+        { id: 'm5', name: 'Jeans', price: '$49.99', image: require('../../assets/jeans.jpg') },
+        { id: 'm6', name: 'T-Shirt', price: '$19.99', image: require('../../assets/tshirt.jpg') },
+        { id: 'm7', name: 'Polo Shirt', price: '$24.99', image: require('../../assets/polo.jpg') },
+        { id: 'm8', name: 'Casual Jacket', price: '$89.99', image: require('../../assets/jacketcasual.jpg') },
+      ],
     },
     women: {
       official: [
-        { id: 'w1', name: 'Blazer Set', price: '$189.99', image: null },
-        { id: 'w2', name: 'Formal Blouse', price: '$69.99', image: null },
-        { id: 'w3', name: 'Pencil Skirt', price: '$59.99', image: null },
-        { id: 'w4', name: 'Office Dress', price: '$99.99', image: null },
+        { id: 'w1', name: 'Blazer Set', price: '$189.99', image: require('../../assets/blazerset.jpg') },
+        { id: 'w2', name: 'Formal Blouse', price: '$69.99', image: require('../../assets/blouse.jpg') },
+        { id: 'w3', name: 'Pencil Skirt', price: '$59.99', image: require('../../assets/skirt.jpg') },
+        { id: 'w4', name: 'Office Dress', price: '$99.99', image: require('../../assets/officedress.jpg') },
       ],
       casual: [
-        { id: 'w5', name: 'Summer Dress', price: '$39.99', image: null },
-        { id: 'w6', name: 'Casual Top', price: '$29.99', image: null },
-        { id: 'w7', name: 'Denim Jeans', price: '$44.99', image: null },
-        { id: 'w8', name: 'Cardigan', price: '$34.99', image: null },
-      ]
+        { id: 'w5', name: 'Summer Dress', price: '$39.99', image: require('../../assets/summer.jpg') },
+        { id: 'w6', name: 'Casual Top', price: '$29.99', image: require('../../assets/casualtee.jpg') },
+        { id: 'w7', name: 'Denim Jeans', price: '$44.99', image: require('../../assets/denimwomen.jpg') },
+        { id: 'w8', name: 'Cardigan', price: '$34.99', image: require('../../assets/cardigan.jpg') },
+      ],
     },
     children: {
       indoors: [
-        { id: 'c1', name: 'Pajama Set', price: '$19.99', image: null },
-        { id: 'c2', name: 'House Slippers', price: '$14.99', image: null },
-        { id: 'c3', name: 'Play Clothes', price: '$24.99', image: null },
-        { id: 'c4', name: 'Onesies', price: '$17.99', image: null },
+        { id: 'c1', name: 'Pajama Set', price: '$19.99', image: require('../../assets/pajama.jpg') },
+        { id: 'c2', name: 'House Slippers', price: '$14.99', image: require('../../assets/slippers.jpg') },
+        { id: 'c3', name: 'Play Clothes', price: '$24.99', image: require('../../assets/play.jpg') },
+        { id: 'c4', name: 'Onesies', price: '$17.99', image: require('../../assets/Onesies.jpg') },
       ],
       outdoors: [
-        { id: 'c5', name: 'Kids Jacket', price: '$39.99', image: null },
-        { id: 'c6', name: 'School Uniform', price: '$49.99', image: null },
-        { id: 'c7', name: 'Sports Outfit', price: '$29.99', image: null },
-        { id: 'c8', name: 'Winter Coat', price: '$59.99', image: null },
-      ]
+        { id: 'c5', name: 'Kids Jacket', price: '$39.99', image: require('../../assets/jacketkid.jpg') },
+        { id: 'c6', name: 'School Uniform', price: '$49.99', image: require('../../assets/uniform.jpg') },
+        { id: 'c7', name: 'Sports Outfit', price: '$29.99', image: require('../../assets/sport.jpg') },
+        { id: 'c8', name: 'Winter Coat', price: '$59.99', image: require('../../assets/winter.jpg') },
+      ],
     },
     sneakers: {
       casual: [
-        { id: 's1', name: 'Urban Sneakers', price: '$79.99', image: null },
-        { id: 's2', name: 'Canvas Shoes', price: '$49.99', image: null },
-        { id: 's3', name: 'Slip-on Sneakers', price: '$39.99', image: null },
-        { id: 's4', name: 'Fashion Trainers', price: '$69.99', image: null },
+        { id: 's1', name: 'Urban Sneakers', price: '$79.99', image: require('../../assets/urban.jpg') },
+        { id: 's2', name: 'Canvas Shoes', price: '$49.99', image: require('../../assets/canvas.jpg') },
+        { id: 's3', name: 'Slip-on Sneakers', price: '$39.99', image: require('../../assets/slip.jpg') },
+        { id: 's4', name: 'Fashion Trainers', price: '$69.99', image: require('../../assets/fashion.jpg') },
       ],
       sport: [
-        { id: 's5', name: 'Running Shoes', price: '$89.99', image: null },
-        { id: 's6', name: 'Basketball Sneakers', price: '$99.99', image: null },
-        { id: 's7', name: 'Training Shoes', price: '$84.99', image: null },
-        { id: 's8', name: 'Tennis Shoes', price: '$74.99', image: null },
-      ]
-    }
-  };
-
-  // Handler for navigation 
-  const handleNavigation = (path: string) => {
-    console.log(`Navigating to: ${path}`);
-    // Reset subcategory selection when navigating away
-    setSelectedSubcategory(null);
-    
-    // If path is a main category, select it
-    if (categories.some(cat => cat.path === path)) {
-      setSelectedCategory(path as CategoryName);
-    }
+        { id: 's5', name: 'Running Shoes', price: '$89.99', image: require('../../assets/running.jpg') },
+        { id: 's6', name: 'Basketball Sneakers', price: '$99.99', image: require('../../assets/basketball.jpg') },
+        { id: 's7', name: 'Training Shoes', price: '$84.99', image: require('../../assets/training.jpg') },
+        { id: 's8', name: 'Tennis Shoes', price: '$74.99', image: require('../../assets/tennis.jpg') },
+      ],
+    },
   };
 
   // Handler for subcategory selection
@@ -128,304 +128,131 @@ const Categories: React.FC = () => {
   // Function to get products for the selected category and subcategory
   const getSelectedProducts = (): Product[] => {
     if (selectedCategory && selectedSubcategory) {
-      const subcatKey = selectedSubcategory.toLowerCase();
-      // Check if the subcategory exists for the selected category
-      if (products[selectedCategory] && products[selectedCategory][subcatKey]) {
-        return products[selectedCategory][subcatKey];
+      const category = assets[selectedCategory];
+      if (category && selectedSubcategory in category) {
+        switch (selectedCategory) {
+          case 'men':
+            return (category as Record<MenSubcategories, Product[]>)[selectedSubcategory as MenSubcategories];
+          case 'women':
+            return (category as Record<WomenSubcategories, Product[]>)[selectedSubcategory as WomenSubcategories];
+          case 'children':
+            return (category as Record<ChildrenSubcategories, Product[]>)[selectedSubcategory as ChildrenSubcategories];
+          case 'sneakers':
+            return (category as Record<SneakersSubcategories, Product[]>)[selectedSubcategory as SneakersSubcategories];
+        }
       }
     }
     return [];
   };
 
-  // Get the color for the selected category
-  const getSelectedCategoryColor = (): string => {
-    const selectedCat = categories.find(cat => cat.path === selectedCategory);
-    return selectedCat ? selectedCat.color : '#000';
+  // Add to cart functionality
+  const addToCart = (product: Product) => {
+    setCart([...cart, product]);
   };
 
-  // The rest of your component implementation
-  // ...
-
-  // Modified product display with TypeScript fixes
-  const renderProductItem = (product: Product) => (
-    <TouchableOpacity 
-      key={product.id} 
-      style={styles.productCard}
-    >
-      <View 
-        style={[
-          styles.productImageContainer, 
-          { backgroundColor: getSelectedCategoryColor() + '20' }
-        ]}
-      >
-        {product.image ? (
-          <Image 
-            source={{uri: product.image}} 
-            style={styles.productImage} 
-          />
-        ) : (
-          <View style={styles.productImagePlaceholder}>
-            <Text style={[styles.productPlaceholderText, { color: getSelectedCategoryColor() }]}>
-              {product.name}
-            </Text>
-          </View>
-        )}
-        <TouchableOpacity 
-          style={styles.favoriteButton}
-          onPress={() => console.log(`Added ${product.name} to favorites`)}
-        >
-          <AntDesign name="hearto" size={16} color={getSelectedCategoryColor()} />
-        </TouchableOpacity>
-      </View>
-      <Text style={styles.productName}>{product.name}</Text>
-      <Text style={[styles.productPrice, { color: getSelectedCategoryColor() }]}>
-        {product.price}
-      </Text>
-    </TouchableOpacity>
+  // Render product item
+  const renderProductItem = ({ item }: { item: Product }) => (
+    <View style={styles.productCard}>
+      <Image source={item.image} style={styles.productImage} />
+      <Text style={styles.productName}>{item.name}</Text>
+      <Text style={styles.productPrice}>{item.price}</Text>
+      <TouchableOpacity style={styles.addToCartButton} onPress={() => addToCart(item)}>
+        <Text style={styles.addToCartText}>Add to Cart</Text>
+      </TouchableOpacity>
+    </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        {/* Navigation */}
-        <View style={styles.navContainer}>
-          {navItems.map((item) => (
-            <TouchableOpacity 
-              key={item} 
-              onPress={() => handleNavigation(item)}
-              style={styles.navItem}
-            >
-              <Text 
-                style={[
-                  styles.navText, 
-                  selectedCategory === item && { color: getSelectedCategoryColor(), fontWeight: '600' }
-                ]}
-              >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Search bar */}
-        <View style={styles.searchContainer}>
-          <Feather name="search" size={16} color="#999" style={styles.searchIcon} />
-          <TextInput
-            placeholder="Search items..."
-            style={styles.searchInput}
-          />
-        </View>
-
-        {/* Featured section */}
-        <View style={[styles.featuredContainer, { backgroundColor: selectedCategory ? getSelectedCategoryColor() + '20' : '#f0f0f0' }]}>
-          <Text style={styles.featuredSubtitle}>The most popular</Text>
-          <Text style={styles.featuredTitle}>clothes today</Text>
-          <View style={[styles.discountBadge, { backgroundColor: selectedCategory ? getSelectedCategoryColor() : '#000' }]}>
-            <Text style={styles.discountText}>50% OFF</Text>
-          </View>
-        </View>
-
-        {/* Circular category tabs */}
-        <View style={styles.circularCatsContainer}>
-          {categories.map((category) => (
-            <TouchableOpacity 
-              key={category.id} 
-              onPress={() => handleNavigation(category.path)}
-              style={styles.circularCatItem}
-            >
-              <View 
-                style={[
-                  styles.circularCatImageContainer, 
-                  { 
-                    backgroundColor: category.color + '30',
-                    borderWidth: selectedCategory === category.path ? 3 : 0,
-                    borderColor: category.color
-                  }
-                ]}
-              >
-                {category.image ? (
-                  <Image 
-                    source={{uri: category.image}} 
-                    style={styles.circularCatImage} 
-                  />
-                ) : (
-                  <View style={styles.circularCatPlaceholder}>
-                    <Text style={[styles.placeholderText, { color: category.color }]}>
-                      {category.name[0]}
-                    </Text>
-                  </View>
-                )}
-              </View>
-              <Text 
-                style={[
-                  styles.circularCatName, 
-                  selectedCategory === category.path && { color: category.color, fontWeight: '700' }
-                ]}
-              >
-                {category.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Show subcategories when a category is selected */}
-        {selectedCategory && (
-          <View style={styles.selectedSubcategories}>
-            <Text style={[styles.selectedCategoryTitle, { color: getSelectedCategoryColor() }]}>
-              {categories.find(cat => cat.path === selectedCategory)?.name} Categories
-            </Text>
-            <View style={styles.subcatButtons}>
-              {subcategories[selectedCategory].map((subcat, index) => (
-                <TouchableOpacity 
-                  key={index} 
-                  onPress={() => handleSubcategorySelect(subcat)}
-                  style={[
-                    styles.subcatButton, 
-                    { borderColor: getSelectedCategoryColor() },
-                    selectedSubcategory === subcat.toLowerCase() && { 
-                      backgroundColor: getSelectedCategoryColor(),
-                    }
-                  ]}
-                >
-                  <Text 
-                    style={[
-                      styles.subcatButtonText,
-                      selectedSubcategory === subcat.toLowerCase() && { color: '#fff' }
-                    ]}
-                  >
-                    {subcat}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerText}>home</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('CartScreen', { cart })}>
+          <AntDesign name="shoppingcart" size={24} color="#000" />
+          {cart.length > 0 && (
+            <View style={styles.cartBadge}>
+              <Text style={styles.cartBadgeText}>{cart.length}</Text>
             </View>
-          </View>
-        )}
-
-        {/* Display products when both category and subcategory are selected */}
-        {selectedCategory && selectedSubcategory && (
-          <View style={styles.productsContainer}>
-            <Text style={styles.productsTitle}>
-              Available Items
-            </Text>
-
-            <View style={styles.productsGrid}>
-              {getSelectedProducts().map(product => renderProductItem(product))}
-            </View>
-          </View>
-        )}
-
-        {/* Show main categories grid if no specific category is selected */}
-        {!selectedCategory && (
-          <>
-            {/* Filters */}
-            <View style={styles.filterContainer}>
-              <TouchableOpacity style={styles.filterButtonActive}>
-                <Text style={styles.filterTextActive}>All</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.filterButton}>
-                <Text style={styles.filterText}>New</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.filterButton}>
-                <Text style={styles.filterText}>Featured</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.filterButton}>
-                <Text style={styles.filterText}>Sale</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Popular Categories section (shown only when no category is selected) */}
-            <View style={styles.subcatsContainer}>
-              <Text style={styles.sectionTitle}>Popular Categories</Text>
-              <View style={styles.subcatsGrid}>
-                {categories.map((category) => (
-                  <View key={category.id} style={styles.subcatColumn}>
-                    <Text style={[styles.subcatTitle, { color: category.color }]}>{category.name}</Text>
-                    <View style={styles.subcatList}>
-                      {subcategories[category.path].map((subcat, index) => (
-                        <TouchableOpacity 
-                          key={index} 
-                          onPress={() => {
-                            setSelectedCategory(category.path);
-                            handleSubcategorySelect(subcat);
-                          }}
-                          style={styles.subcatItem}
-                        >
-                          <Text style={[styles.subcatText, { color: '#666' }]}>
-                            {subcat}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </View>
-                ))}
-              </View>
-            </View>
-
-            {/* Products Grid when no category is selected */}
-            <View style={styles.productsGrid}>
-              {categories.map((category) => (
-                <TouchableOpacity 
-                  key={category.id} 
-                  onPress={() => handleNavigation(category.path)}
-                  style={styles.productCard}
-                >
-                  <View 
-                    style={[
-                      styles.productImageContainer, 
-                      { backgroundColor: category.color + '20' }
-                    ]}
-                  >
-                    {category.image ? (
-                      <Image 
-                        source={{uri: category.image}} 
-                        style={styles.productImage} 
-                      />
-                    ) : (
-                      <View style={styles.productImagePlaceholder}>
-                        <Text style={[styles.productPlaceholderText, { color: category.color }]}>
-                          {category.name}
-                        </Text>
-                      </View>
-                    )}
-                    <TouchableOpacity 
-                      style={styles.favoriteButton}
-                      onPress={() => console.log(`Added ${category.name} to favorites`)}
-                    >
-                      <AntDesign name="hearto" size={16} color={category.color} />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.productName}>{category.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </>
-        )}
-        
-        {/* Bottom spacing to clear the tab bar */}
-        <View style={styles.bottomSpacing} />
-      </ScrollView>
-
-      {/* Bottom tab navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity 
-          onPress={() => {
-            setSelectedCategory(null);
-            setSelectedSubcategory(null);
-            handleNavigation('home');
-          }}
-        >
-          <Feather name="home" size={20} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleNavigation('favorites')}>
-          <AntDesign name="hearto" size={20} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleNavigation('cart')}>
-          <Feather name="shopping-bag" size={20} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleNavigation('account')}>
-          <Ionicons name="time-outline" size={20} color="#000" />
+          )}
         </TouchableOpacity>
       </View>
+
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <Feather name="search" size={20} color="#999" style={styles.searchIcon} />
+        <TextInput
+          placeholder="Search clothes..."
+          style={styles.searchInput}
+        />
+      </View>
+
+      {/* Promotional Banner */}
+      <View style={styles.banner}>
+        <Text style={styles.bannerTitle}>The most popular clothes today</Text>
+        <Text style={styles.bannerSubtitle}>50%OFF</Text>
+      </View>
+
+      {/* Category Tabs */}
+      <View style={styles.categoryTabs}>
+        {categories.map((category) => (
+          <TouchableOpacity
+            key={category.id}
+            style={[
+              styles.categoryTab,
+              selectedCategory === category.path && styles.selectedCategoryTab,
+            ]}
+            onPress={() => setSelectedCategory(category.path)}
+          >
+            <Text
+              style={[
+                styles.categoryText,
+                selectedCategory === category.path && styles.selectedCategoryText,
+              ]}
+            >
+              {category.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Subcategories */}
+      {selectedCategory && (
+        <View style={styles.subcategoriesContainer}>
+          <View style={styles.subcategoryTabs}>
+            {subcategories[selectedCategory].map((subcat) => (
+              <TouchableOpacity
+                key={subcat}
+                style={[
+                  styles.subcategoryTab,
+                  selectedSubcategory === subcat.toLowerCase() && styles.selectedSubcategoryTab,
+                ]}
+                onPress={() => handleSubcategorySelect(subcat)}
+              >
+                <Text
+                  style={[
+                    styles.subcategoryText,
+                    selectedSubcategory === subcat.toLowerCase() && styles.selectedSubcategoryText,
+                  ]}
+                >
+                  {subcat}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Products for selected subcategory */}
+          {selectedSubcategory && (
+            <FlatList
+              data={getSelectedProducts()}
+              renderItem={renderProductItem}
+              keyExtractor={(item) => item.id}
+              numColumns={2}
+              contentContainerStyle={styles.productGrid}
+              style={styles.productList} // Added style for scrolling
+            />
+          )}
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -435,255 +262,153 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  navContainer: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    alignItems: 'center',
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
-  navItem: {
-    paddingVertical: 4,
+  headerText: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
-  navText: {
-    color: '#999',
-    fontWeight: '300',
-    textTransform: 'capitalize',
+  cartBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cartBadgeText: {
+    color: '#fff',
+    fontSize: 12,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 10,
     backgroundColor: '#f5f5f5',
+    margin: 15,
     borderRadius: 8,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    paddingHorizontal: 10,
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: 10,
   },
   searchInput: {
     flex: 1,
-    paddingVertical: 10,
-  },
-  featuredContainer: {
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
-  featuredSubtitle: {
-    fontSize: 12,
-    marginBottom: 2,
-  },
-  featuredTitle: {
     fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 8,
   },
-  discountBadge: {
-    backgroundColor: '#000',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
+  banner: {
+    padding: 20,
+    backgroundColor: '#3498db',
+    marginHorizontal: 15,
+    borderRadius: 10,
+    marginBottom: 15,
   },
-  discountText: {
+  bannerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#fff',
-    fontSize: 10,
+    marginBottom: 5,
   },
-  filterContainer: {
+  bannerSubtitle: {
+    fontSize: 16,
+    color: '#fff',
+  },
+  categoryTabs: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 16,
-    marginBottom: 16,
+    justifyContent: 'space-around',
+    marginBottom: 15,
+    paddingHorizontal: 15,
   },
-  filterButton: {
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+  categoryTab: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
     borderRadius: 20,
   },
-  filterButtonActive: {
-    backgroundColor: '#000',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+  selectedCategoryTab: {
+    backgroundColor: '#3498db',
   },
-  filterText: {
-    fontSize: 10,
+  categoryText: {
+    fontSize: 16,
     color: '#333',
   },
-  filterTextActive: {
-    fontSize: 10,
+  selectedCategoryText: {
     color: '#fff',
   },
-  circularCatsContainer: {
+  subcategoriesContainer: {
+    flex: 1, // Ensure it takes up remaining space
+    paddingHorizontal: 15,
+  },
+  subcategoryTabs: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 16,
-    marginBottom: 24,
+    justifyContent: 'space-around',
+    marginBottom: 15,
   },
-  circularCatItem: {
-    alignItems: 'center',
-  },
-  circularCatImageContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    overflow: 'hidden',
-    marginBottom: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  circularCatImage: {
-    width: '100%',
-    height: '100%',
-  },
-  circularCatPlaceholder: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  placeholderText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  circularCatName: {
-    fontSize: 10,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  subcatsContainer: {
-    marginHorizontal: 16,
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '500',
-    marginBottom: 16,
-  },
-  subcatsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  subcatColumn: {
-    width: '50%',
-    marginBottom: 16,
-  },
-  subcatTitle: {
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  subcatList: {
-    marginBottom: 4,
-  },
-  subcatItem: {
-    marginBottom: 4,
-  },
-  subcatText: {
-    fontSize: 12,
-    color: '#666',
-  },
-  selectedSubcategories: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
-  selectedCategoryTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  subcatButtons: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  subcatButton: {
-    borderWidth: 1,
+  subcategoryTab: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
     borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
-    marginBottom: 8,
   },
-  subcatButtonText: {
-    fontSize: 12,
+  selectedSubcategoryTab: {
+    backgroundColor: '#3498db',
   },
-  productsContainer: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
-  productsTitle: {
+  subcategoryText: {
     fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 12,
+    color: '#333',
   },
-  productsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+  selectedSubcategoryText: {
+    color: '#fff',
+  },
+  productGrid: {
+    paddingHorizontal: 15,
+  },
+  productList: {
+    flex: 1, // Ensure it takes up remaining space
   },
   productCard: {
-    width: '48%',
-    marginBottom: 16,
-  },
-  productImageContainer: {
-    aspectRatio: 1,
-    borderRadius: 8,
-    overflow: 'hidden',
-    marginBottom: 8,
-    position: 'relative',
+    width: width / 2 - 20,
+    marginBottom: 20, // Increased spacing between products
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#f9f9f9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   productImage: {
     width: '100%',
-    height: '100%',
-  },
-  productImagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 8,
-  },
-  productPlaceholderText: {
-    color: '#999',
-    textAlign: 'center',
-    fontSize: 14,
-  },
-  favoriteButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 4,
+    height: 150,
+    borderRadius: 10,
+    marginBottom: 8,
   },
   productName: {
-    fontWeight: '500',
-    fontSize: 12,
+    fontSize: 14,
     marginBottom: 4,
   },
   productPrice: {
+    fontSize: 16,
     fontWeight: '600',
-    fontSize: 12,
   },
-  bottomSpacing: {
-    height: 60,
-  },
-  bottomNav: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  addToCartButton: {
+    backgroundColor: '#3498db',
+    padding: 6, // Smaller button
+    borderRadius: 5,
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    paddingVertical: 12,
+    marginTop: 8,
+  },
+  addToCartText: {
+    color: '#fff',
+    fontSize: 12, // Smaller text
   },
 });
 
-export default Categories;
+export default CategoryScreen;
