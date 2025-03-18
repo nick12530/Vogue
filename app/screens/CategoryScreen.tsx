@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, createContext, useContext } from 'react';
 import {
   View,
   Text,
@@ -14,46 +14,39 @@ import { Feather, AntDesign } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
-// Define proper types for our data
+// Define types
 type Product = {
   id: string;
   name: string;
   price: string;
-  image: any; // Changed to any to accept require() images
+  image: any; // Use `any` for require() images
 };
 
 type CategoryName = 'men' | 'women' | 'children' | 'sneakers';
-type MenSubcategories = 'official' | 'casual';
-type WomenSubcategories = 'official' | 'casual';
-type ChildrenSubcategories = 'indoors' | 'outdoors';
-type SneakersSubcategories = 'casual' | 'sport';
-
 type SubcategoryMap = Record<CategoryName, string[]>;
-type AllSubcategories = MenSubcategories | WomenSubcategories | ChildrenSubcategories | SneakersSubcategories;
-type ProductsMap = {
-  men: Record<MenSubcategories, Product[]>;
-  women: Record<WomenSubcategories, Product[]>;
-  children: Record<ChildrenSubcategories, Product[]>;
-  sneakers: Record<SneakersSubcategories, Product[]>;
-};
+type ProductsMap = Record<CategoryName, Record<string, Product[]>>;
+
+// Create a Theme Context
+const ThemeContext = createContext({
+  theme: 'light', // Default theme
+  toggleTheme: () => {}, // Function to toggle theme
+});
 
 const CategoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const { theme, toggleTheme } = useContext(ThemeContext); // Use theme context
   const [selectedCategory, setSelectedCategory] = useState<CategoryName | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [cart, setCart] = useState<Product[]>([]); // State to manage cart items
 
-  // Navigation items (updated to include all categories)
-  const navItems = ['home', 'men', 'women', 'children', 'sneakers', 'cart'];
-
-  // Category data with updated categories
+  // Category data
   const categories = [
-    { id: 1, name: 'Men', path: 'men' as CategoryName, image: require('../../assets/Men.jpg'), color: '#3498db' },
-    { id: 2, name: 'Women', path: 'women' as CategoryName, image: require('../../assets/Women.jpg'), color: '#e84393' },
-    { id: 3, name: 'Children', path: 'children' as CategoryName, image: require('../../assets/Kids.jpg'), color: '#f39c12' },
-    { id: 4, name: 'Sneakers', path: 'sneakers' as CategoryName, image: require('../../assets/Shoes.jpg'), color: '#2ecc71' },
+    { id: 1, name: 'Men', path: 'men' as CategoryName, image: require('../../assets/Men.jpg') },
+    { id: 2, name: 'Women', path: 'women' as CategoryName, image: require('../../assets/Women.jpg') },
+    { id: 3, name: 'Children', path: 'children' as CategoryName, image: require('../../assets/Kids.jpg') },
+    { id: 4, name: 'Sneakers', path: 'sneakers' as CategoryName, image: require('../../assets/Shoes.jpg') },
   ];
 
-  // Subcategories for each main category with your specified categories
+  // Subcategories for each main category
   const subcategories: SubcategoryMap = {
     men: ['Official', 'Casual'],
     women: ['Official', 'Casual'],
@@ -61,15 +54,16 @@ const CategoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     sneakers: ['Casual', 'Sport'],
   };
 
-  const assets: ProductsMap = {
+  // Products for each category and subcategory
+  const products: ProductsMap = {
     men: {
-      official: [
+      Official: [
         { id: 'm1', name: 'Business Suit', price: '$199.99', image: require('../../assets/suit.jpg') },
         { id: 'm2', name: 'Dress Shirt', price: '$59.99', image: require('../../assets/dressshirt.jpg') },
         { id: 'm3', name: 'Formal Pants', price: '$79.99', image: require('../../assets/pants.jpg') },
         { id: 'm4', name: 'Tie Collection', price: '$29.99', image: require('../../assets/tie.jpg') },
       ],
-      casual: [
+      Casual: [
         { id: 'm5', name: 'Jeans', price: '$49.99', image: require('../../assets/jeans.jpg') },
         { id: 'm6', name: 'T-Shirt', price: '$19.99', image: require('../../assets/tshirt.jpg') },
         { id: 'm7', name: 'Polo Shirt', price: '$24.99', image: require('../../assets/polo.jpg') },
@@ -77,13 +71,13 @@ const CategoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       ],
     },
     women: {
-      official: [
+      Official: [
         { id: 'w1', name: 'Blazer Set', price: '$189.99', image: require('../../assets/blazerset.jpg') },
         { id: 'w2', name: 'Formal Blouse', price: '$69.99', image: require('../../assets/blouse.jpg') },
         { id: 'w3', name: 'Pencil Skirt', price: '$59.99', image: require('../../assets/skirt.jpg') },
         { id: 'w4', name: 'Office Dress', price: '$99.99', image: require('../../assets/officedress.jpg') },
       ],
-      casual: [
+      Casual: [
         { id: 'w5', name: 'Summer Dress', price: '$39.99', image: require('../../assets/summer.jpg') },
         { id: 'w6', name: 'Casual Top', price: '$29.99', image: require('../../assets/casualtee.jpg') },
         { id: 'w7', name: 'Denim Jeans', price: '$44.99', image: require('../../assets/denimwomen.jpg') },
@@ -91,13 +85,13 @@ const CategoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       ],
     },
     children: {
-      indoors: [
+      Indoors: [
         { id: 'c1', name: 'Pajama Set', price: '$19.99', image: require('../../assets/pajama.jpg') },
         { id: 'c2', name: 'House Slippers', price: '$14.99', image: require('../../assets/slippers.jpg') },
         { id: 'c3', name: 'Play Clothes', price: '$24.99', image: require('../../assets/play.jpg') },
         { id: 'c4', name: 'Onesies', price: '$17.99', image: require('../../assets/Onesies.jpg') },
       ],
-      outdoors: [
+      Outdoors: [
         { id: 'c5', name: 'Kids Jacket', price: '$39.99', image: require('../../assets/jacketkid.jpg') },
         { id: 'c6', name: 'School Uniform', price: '$49.99', image: require('../../assets/uniform.jpg') },
         { id: 'c7', name: 'Sports Outfit', price: '$29.99', image: require('../../assets/sport.jpg') },
@@ -105,13 +99,13 @@ const CategoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       ],
     },
     sneakers: {
-      casual: [
+      Casual: [
         { id: 's1', name: 'Urban Sneakers', price: '$79.99', image: require('../../assets/urban.jpg') },
         { id: 's2', name: 'Canvas Shoes', price: '$49.99', image: require('../../assets/canvas.jpg') },
         { id: 's3', name: 'Slip-on Sneakers', price: '$39.99', image: require('../../assets/slip.jpg') },
         { id: 's4', name: 'Fashion Trainers', price: '$69.99', image: require('../../assets/fashion.jpg') },
       ],
-      sport: [
+      Sport: [
         { id: 's5', name: 'Running Shoes', price: '$89.99', image: require('../../assets/running.jpg') },
         { id: 's6', name: 'Basketball Sneakers', price: '$99.99', image: require('../../assets/basketball.jpg') },
         { id: 's7', name: 'Training Shoes', price: '$84.99', image: require('../../assets/training.jpg') },
@@ -120,27 +114,10 @@ const CategoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     },
   };
 
-  // Handler for subcategory selection
-  const handleSubcategorySelect = (subcat: string) => {
-    setSelectedSubcategory(subcat.toLowerCase());
-  };
-
-  // Function to get products for the selected category and subcategory
+  // Get products for the selected category and subcategory
   const getSelectedProducts = (): Product[] => {
     if (selectedCategory && selectedSubcategory) {
-      const category = assets[selectedCategory];
-      if (category && selectedSubcategory in category) {
-        switch (selectedCategory) {
-          case 'men':
-            return (category as Record<MenSubcategories, Product[]>)[selectedSubcategory as MenSubcategories];
-          case 'women':
-            return (category as Record<WomenSubcategories, Product[]>)[selectedSubcategory as WomenSubcategories];
-          case 'children':
-            return (category as Record<ChildrenSubcategories, Product[]>)[selectedSubcategory as ChildrenSubcategories];
-          case 'sneakers':
-            return (category as Record<SneakersSubcategories, Product[]>)[selectedSubcategory as SneakersSubcategories];
-        }
-      }
+      return products[selectedCategory][selectedSubcategory] || [];
     }
     return [];
   };
@@ -152,44 +129,55 @@ const CategoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   // Render product item
   const renderProductItem = ({ item }: { item: Product }) => (
-    <View style={styles.productCard}>
+    <View style={[styles.productCard, themeStyles.productCard]}>
       <Image source={item.image} style={styles.productImage} />
-      <Text style={styles.productName}>{item.name}</Text>
-      <Text style={styles.productPrice}>{item.price}</Text>
-      <TouchableOpacity style={styles.addToCartButton} onPress={() => addToCart(item)}>
+      <Text style={[styles.productName, themeStyles.productName]}>{item.name}</Text>
+      <Text style={[styles.productPrice, themeStyles.productPrice]}>{item.price}</Text>
+      <TouchableOpacity style={[styles.addToCartButton, themeStyles.addToCartButton]} onPress={() => addToCart(item)}>
         <Text style={styles.addToCartText}>Add to Cart</Text>
       </TouchableOpacity>
     </View>
   );
 
+  // Theme-based styles
+  const themeStyles = theme === 'light' ? lightStyles : darkStyles;
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, themeStyles.container]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerText}>home</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('CartScreen', { cart })}>
-          <AntDesign name="shoppingcart" size={24} color="#000" />
-          {cart.length > 0 && (
-            <View style={styles.cartBadge}>
-              <Text style={styles.cartBadgeText}>{cart.length}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+      <View style={[styles.header, themeStyles.header]}>
+        <Text style={[styles.headerText, themeStyles.headerText]}>Home</Text>
+        <View style={styles.headerIcons}>
+          <TouchableOpacity onPress={() => navigation.navigate('CartScreen', { cart })}>
+            <AntDesign name="shoppingcart" size={24} color={theme === 'light' ? '#000' : '#fff'} />
+            {cart.length > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{cart.length}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={toggleTheme} style={styles.themeToggleButton}>
+            <Text style={styles.themeToggleIcon}>
+              {theme === 'light' ? '🌙' : '☀️'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <Feather name="search" size={20} color="#999" style={styles.searchIcon} />
+      <View style={[styles.searchContainer, themeStyles.searchContainer]}>
+        <Feather name="search" size={20} color={theme === 'light' ? '#999' : '#ccc'} style={styles.searchIcon} />
         <TextInput
           placeholder="Search clothes..."
-          style={styles.searchInput}
+          placeholderTextColor={theme === 'light' ? '#999' : '#ccc'}
+          style={[styles.searchInput, themeStyles.searchInput]}
         />
       </View>
 
       {/* Promotional Banner */}
-      <View style={styles.banner}>
+      <View style={[styles.banner, themeStyles.banner]}>
         <Text style={styles.bannerTitle}>The most popular clothes today</Text>
-        <Text style={styles.bannerSubtitle}>50%OFF</Text>
+        <Text style={styles.bannerSubtitle}>50% OFF</Text>
       </View>
 
       {/* Category Tabs */}
@@ -200,6 +188,7 @@ const CategoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
             style={[
               styles.categoryTab,
               selectedCategory === category.path && styles.selectedCategoryTab,
+              themeStyles.categoryTab,
             ]}
             onPress={() => setSelectedCategory(category.path)}
           >
@@ -207,6 +196,7 @@ const CategoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               style={[
                 styles.categoryText,
                 selectedCategory === category.path && styles.selectedCategoryText,
+                themeStyles.categoryText,
               ]}
             >
               {category.name}
@@ -224,14 +214,16 @@ const CategoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
                 key={subcat}
                 style={[
                   styles.subcategoryTab,
-                  selectedSubcategory === subcat.toLowerCase() && styles.selectedSubcategoryTab,
+                  selectedSubcategory === subcat && styles.selectedSubcategoryTab,
+                  themeStyles.subcategoryTab,
                 ]}
-                onPress={() => handleSubcategorySelect(subcat)}
+                onPress={() => setSelectedSubcategory(subcat)}
               >
                 <Text
                   style={[
                     styles.subcategoryText,
-                    selectedSubcategory === subcat.toLowerCase() && styles.selectedSubcategoryText,
+                    selectedSubcategory === subcat && styles.selectedSubcategoryText,
+                    themeStyles.subcategoryText,
                   ]}
                 >
                   {subcat}
@@ -248,7 +240,7 @@ const CategoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               keyExtractor={(item) => item.id}
               numColumns={2}
               contentContainerStyle={styles.productGrid}
-              style={styles.productList} // Added style for scrolling
+              style={styles.productList} // Ensure scrolling
             />
           )}
         </View>
@@ -257,10 +249,102 @@ const CategoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   );
 };
 
+// Light theme styles
+const lightStyles = StyleSheet.create({
+  container: {
+    backgroundColor: '#fff',
+  },
+  header: {
+    borderBottomColor: '#eee',
+  },
+  headerText: {
+    color: '#000',
+  },
+  searchContainer: {
+    backgroundColor: '#f5f5f5',
+  },
+  searchInput: {
+    color: '#000',
+  },
+  banner: {
+    backgroundColor: '#3498db',
+  },
+  categoryTab: {
+    backgroundColor: '#f5f5f5',
+  },
+  categoryText: {
+    color: '#333',
+  },
+  subcategoryTab: {
+    backgroundColor: '#f5f5f5',
+  },
+  subcategoryText: {
+    color: '#333',
+  },
+  productCard: {
+    backgroundColor: '#f9f9f9',
+  },
+  productName: {
+    color: '#333',
+  },
+  productPrice: {
+    color: '#333',
+  },
+  addToCartButton: {
+    backgroundColor: '#3498db',
+  },
+});
+
+// Dark theme styles
+const darkStyles = StyleSheet.create({
+  container: {
+    backgroundColor: '#121212',
+  },
+  header: {
+    borderBottomColor: '#333',
+  },
+  headerText: {
+    color: '#fff',
+  },
+  searchContainer: {
+    backgroundColor: '#333',
+  },
+  searchInput: {
+    color: '#fff',
+  },
+  banner: {
+    backgroundColor: '#1e1e1e',
+  },
+  categoryTab: {
+    backgroundColor: '#333',
+  },
+  categoryText: {
+    color: '#fff',
+  },
+  subcategoryTab: {
+    backgroundColor: '#333',
+  },
+  subcategoryText: {
+    color: '#fff',
+  },
+  productCard: {
+    backgroundColor: '#1e1e1e',
+  },
+  productName: {
+    color: '#fff',
+  },
+  productPrice: {
+    color: '#fff',
+  },
+  addToCartButton: {
+    backgroundColor: '#3498db',
+  },
+});
+
+// Base styles (shared between themes)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -268,11 +352,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   headerText: {
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  headerIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   cartBadge: {
     position: 'absolute',
@@ -289,11 +376,16 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
   },
+  themeToggleButton: {
+    marginLeft: 15,
+  },
+  themeToggleIcon: {
+    fontSize: 24,
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
-    backgroundColor: '#f5f5f5',
     margin: 15,
     borderRadius: 8,
   },
@@ -306,7 +398,6 @@ const styles = StyleSheet.create({
   },
   banner: {
     padding: 20,
-    backgroundColor: '#3498db',
     marginHorizontal: 15,
     borderRadius: 10,
     marginBottom: 15,
@@ -337,13 +428,12 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 16,
-    color: '#333',
   },
   selectedCategoryText: {
     color: '#fff',
   },
   subcategoriesContainer: {
-    flex: 1, // Ensure it takes up remaining space
+    flex: 1,
     paddingHorizontal: 15,
   },
   subcategoryTabs: {
@@ -361,7 +451,6 @@ const styles = StyleSheet.create({
   },
   subcategoryText: {
     fontSize: 16,
-    color: '#333',
   },
   selectedSubcategoryText: {
     color: '#fff',
@@ -370,14 +459,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
   },
   productList: {
-    flex: 1, // Ensure it takes up remaining space
+    flex: 1, // Ensure scrolling
   },
   productCard: {
     width: width / 2 - 20,
-    marginBottom: 20, // Increased spacing between products
+    marginBottom: 20,
     padding: 10,
     borderRadius: 10,
-    backgroundColor: '#f9f9f9',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -399,16 +487,30 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   addToCartButton: {
-    backgroundColor: '#3498db',
-    padding: 6, // Smaller button
+    padding: 6,
     borderRadius: 5,
     alignItems: 'center',
     marginTop: 8,
   },
   addToCartText: {
     color: '#fff',
-    fontSize: 12, // Smaller text
+    fontSize: 12,
   },
 });
 
-export default CategoryScreen;
+// Wrap the app with ThemeProvider
+const App = () => {
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      <CategoryScreen navigation={{ navigate: () => {} }} />
+    </ThemeContext.Provider>
+  );
+};
+
+export default App;

@@ -1,6 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, SafeAreaView, StatusBar, ImageSourcePropType } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
+// Import images using require
+const chronographImage = require('../../assets/chronograph.jpg');
+const iceChainImage = require('../../assets/icechain.jpg');
+const goldWatchImage = require('../../assets/goldwatch.jpg');
+const sapphireImage = require('../../assets/saphire.jpg');
+const newArrivalsImage = require('../../assets/newarrivals.jpg');
 
 // Define types
 type Product = {
@@ -8,7 +15,7 @@ type Product = {
   name: string;
   price: string;
   category: string;
-  image: string;
+  image: any; // Use `any` for require statements
 };
 
 type Category = {
@@ -17,28 +24,28 @@ type Category = {
 };
 
 const FeaturedScreen = () => {
-  // Sample featured products data
+  // Sample featured products data for watches and ice chains
   const featuredProducts: Product[] = [
-    { id: 1, name: 'Diamond Pendant Necklace', price: '$1,299', category: 'jewelry', image: 'https://via.placeholder.com/150' },
-    { id: 2, name: 'Luxury Chronograph Watch', price: '$2,499', category: 'watches', image: 'https://via.placeholder.com/150' },
-    { id: 3, name: 'Sapphire Tennis Bracelet', price: '$899', category: 'jewelry', image: 'https://via.placeholder.com/150' },
-    { id: 4, name: 'Minimalist Gold Watch', price: '$1,199', category: 'watches', image: 'https://via.placeholder.com/150' },
+    { id: 1, name: 'Luxury Chronograph Watch', price: '$2,499', category: 'watches', image: chronographImage },
+    { id: 2, name: 'Diamond Ice Chain', price: '$1,999', category: 'ice-chains', image: iceChainImage },
+    { id: 3, name: 'Minimalist Gold Watch', price: '$1,199', category: 'watches', image: goldWatchImage },
+    { id: 4, name: 'Platinum Ice Chain', price: '$2,299', category: 'ice-chains', image: iceChainImage },
+    { id: 5, name: 'Sapphire Tennis Bracelet', price: '$899', category: 'ice-chains', image: sapphireImage },
+    { id: 6, name: 'Rose Gold Watch', price: '$1,499', category: 'watches', image: goldWatchImage },
   ];
 
-  // Sample categories
+  // Sample categories for watches and ice chains
   const categories: Category[] = [
     { id: 1, name: 'All' },
-    { id: 2, name: 'Necklaces' },
-    { id: 3, name: 'Bracelets' },
-    { id: 4, name: 'Watches' },
-    { id: 5, name: 'Rings' },
+    { id: 2, name: 'Watches' },
+    { id: 3, name: 'Ice Chains' },
   ];
 
   // Product card component
   const ProductCard = ({ product }: { product: Product }) => (
     <TouchableOpacity style={styles.productCard}>
       <View style={styles.imageContainer}>
-        <Image source={{ uri: product.image }} style={styles.productImage} />
+        <Image source={product.image} style={styles.productImage} />
         <TouchableOpacity style={styles.favoriteButton}>
           <Ionicons name="heart-outline" size={20} color="#333" />
         </TouchableOpacity>
@@ -74,12 +81,12 @@ const FeaturedScreen = () => {
         {/* Hero Banner */}
         <View style={styles.heroBanner}>
           <Image 
-            source={{ uri: 'https://via.placeholder.com/400x200' }}
+            source={newArrivalsImage} // Use imported image
             style={styles.heroBannerImage}
           />
           <View style={styles.bannerOverlay}>
             <Text style={styles.bannerTitle}>Timeless Elegance</Text>
-            <Text style={styles.bannerSubtitle}>Discover our premium collection</Text>
+            <Text style={styles.bannerSubtitle}>Discover our premium watches and ice chains</Text>
             <TouchableOpacity style={styles.shopNowButton}>
               <Text style={styles.shopNowText}>Shop Now</Text>
             </TouchableOpacity>
@@ -119,7 +126,7 @@ const FeaturedScreen = () => {
         {/* New Arrivals Banner */}
         <View style={styles.newArrivalsBanner}>
           <Text style={styles.newArrivalsTitle}>New Arrivals</Text>
-          <Text style={styles.newArrivalsSubtitle}>Exclusive pieces just for you</Text>
+          <Text style={styles.newArrivalsSubtitle}>Exclusive watches and ice chains just for you</Text>
           <TouchableOpacity style={styles.exploreButton}>
             <Text style={styles.exploreButtonText}>Explore Collection</Text>
           </TouchableOpacity>

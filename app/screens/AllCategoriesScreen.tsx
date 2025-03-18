@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, createContext, useContext } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Dimensions, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -20,12 +20,18 @@ type NavigationProp = {
   ) => void;
 };
 
+// Create a Theme Context
+const ThemeContext = createContext({
+  theme: 'light', // Default theme
+  toggleTheme: () => {}, // Function to toggle theme
+});
+
 const { width } = Dimensions.get('window');
 
 const HomeScreen = () => {
-  // Cast the navigation to our custom type
   const navigation = useNavigation() as NavigationProp;
-  
+  const { theme, toggleTheme } = useContext(ThemeContext); // Use theme context
+
   const navigateToCategory = (categoryId: string, categoryName: string) => {
     navigation.navigate('Category', { 
       categoryId,
@@ -60,19 +66,18 @@ const HomeScreen = () => {
     }
   ];
 
-  // Featured collections without prices
   const featuredCollections = [
     {
       id: 'featured1',
       name: 'Summer Collection',
       tagline: 'Fresh styles for the season',
-      image: require('../../assets/Men.jpg')
+      image: require('../../assets/summerfit.jpg')
     },
     {
       id: 'featured2',
       name: 'Winter Essentials',
       tagline: 'Stay warm in style',
-      image: require('../../assets/Women.jpg')
+      image: require('../../assets/winterfit.jpg')
     },
     {
       id: 'featured3',
@@ -82,25 +87,38 @@ const HomeScreen = () => {
     }
   ];
 
+  // Define theme-based styles
+  const themeStyles = theme === 'light' ? lightStyles : darkStyles;
+
   return (
     <>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <StatusBar barStyle={theme === 'light' ? 'dark-content' : 'light-content'} backgroundColor={themeStyles.scrollView.backgroundColor} />
+      <ScrollView style={[styles.scrollView, themeStyles.scrollView]} showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.logoText}>VOGUE OUTFITS</Text>
-          <TouchableOpacity 
-            style={styles.searchButton}
-            onPress={() => navigation.navigate('Search')}
-          >
-            <Text style={styles.searchIcon}>🔍</Text>
-          </TouchableOpacity>
+        <View style={[styles.header, themeStyles.header]}>
+          <Text style={[styles.logoText, themeStyles.logoText]}>VOGUE OUTFITS</Text>
+          <View style={styles.headerIcons}>
+            <TouchableOpacity 
+              style={styles.searchButton}
+              onPress={() => navigation.navigate('Search')}
+            >
+              <Text style={[styles.searchIcon, themeStyles.searchIcon]}>🔍</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.themeToggleButton}
+              onPress={toggleTheme}
+            >
+              <Text style={[styles.themeToggleIcon, themeStyles.themeToggleIcon]}>
+                {theme === 'light' ? '🌙' : '☀️'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Hero Banner */}
         <View style={styles.heroBanner}>
           <Image 
-            source={require('../../assets/Women.jpg')} 
+            source={require('../../assets/newarrivals.jpg')} 
             style={styles.heroImage}
             resizeMode="cover"
           />
@@ -119,9 +137,9 @@ const HomeScreen = () => {
         {/* Categories Section */}
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Categories</Text>
+            <Text style={[styles.sectionTitle, themeStyles.sectionTitle]}>Categories</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Categories')}>
-              <Text style={styles.seeAllText}>See All</Text>
+              <Text style={[styles.seeAllText, themeStyles.seeAllText]}>See All</Text>
             </TouchableOpacity>
           </View>
           <ScrollView 
@@ -142,7 +160,7 @@ const HomeScreen = () => {
                     resizeMode="cover"
                   />
                 </View>
-                <Text style={styles.categoryName}>{category.name}</Text>
+                <Text style={[styles.categoryName, themeStyles.categoryName]}>{category.name}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -151,9 +169,9 @@ const HomeScreen = () => {
         {/* Featured Collections Section */}
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Featured Collections</Text>
+            <Text style={[styles.sectionTitle, themeStyles.sectionTitle]}>Featured Collections</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Featured')}>
-              <Text style={styles.seeAllText}>See All</Text>
+              <Text style={[styles.seeAllText, themeStyles.seeAllText]}>See All</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.featuredGrid}>
@@ -182,7 +200,7 @@ const HomeScreen = () => {
 
         {/* Popular Categories Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Shop by Category</Text>
+          <Text style={[styles.sectionTitle, themeStyles.sectionTitle]}>Shop by Category</Text>
           {categories.slice(0, 2).map((category) => (
             <TouchableOpacity 
               key={category.id} 
@@ -211,7 +229,7 @@ const HomeScreen = () => {
         {/* Special Promotions Banner */}
         <View style={styles.promotionBanner}>
           <Image 
-            source={require('../../assets/Kids.jpg')} 
+            source={require('../../assets/special.jpg')} 
             style={styles.promotionImage}
             resizeMode="cover"
           />
@@ -231,9 +249,68 @@ const HomeScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+// Light theme styles
+const lightStyles = StyleSheet.create({
   scrollView: {
     backgroundColor: '#fff',
+  },
+  header: {
+    backgroundColor: '#fff',
+    borderBottomColor: '#f0f0f0',
+  },
+  logoText: {
+    color: '#000',
+  },
+  searchIcon: {
+    color: '#000',
+  },
+  themeToggleIcon: {
+    color: '#000',
+  },
+  sectionTitle: {
+    color: '#333',
+  },
+  seeAllText: {
+    color: '#666',
+  },
+  categoryName: {
+    color: '#333',
+  },
+});
+
+// Dark theme styles
+const darkStyles = StyleSheet.create({
+  scrollView: {
+    backgroundColor: '#121212',
+  },
+  header: {
+    backgroundColor: '#1e1e1e',
+    borderBottomColor: '#333',
+  },
+  logoText: {
+    color: '#fff',
+  },
+  searchIcon: {
+    color: '#fff',
+  },
+  themeToggleIcon: {
+    color: '#fff',
+  },
+  sectionTitle: {
+    color: '#fff',
+  },
+  seeAllText: {
+    color: '#ccc',
+  },
+  categoryName: {
+    color: '#fff',
+  },
+});
+
+// Base styles (shared between themes)
+const styles = StyleSheet.create({
+  scrollView: {
+    flex: 1,
   },
   header: {
     flexDirection: 'row',
@@ -242,12 +319,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   logoText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#000',
+  },
+  headerIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   searchButton: {
     width: 40,
@@ -256,6 +335,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchIcon: {
+    fontSize: 20,
+  },
+  themeToggleButton: {
+    marginLeft: 10,
+  },
+  themeToggleIcon: {
     fontSize: 20,
   },
   heroBanner: {
@@ -314,11 +399,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 15,
   },
   seeAllText: {
-    color: '#666',
     fontSize: 14,
     fontWeight: '500',
   },
@@ -346,7 +429,6 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
     textAlign: 'center',
   },
   featuredGrid: {
@@ -489,4 +571,19 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen;
+// Wrap the app with ThemeProvider
+const App = () => {
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      <HomeScreen />
+    </ThemeContext.Provider>
+  );
+};
+
+export default App;

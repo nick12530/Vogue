@@ -1,136 +1,180 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, Dimensions } from 'react-native';
 
-interface PromotionItem {
+const { width } = Dimensions.get('window');
+
+interface Jersey {
   id: string;
-  type: 'hat' | 'cape';
   title: string;
-  description: string;
-  discount: string;
   price: string;
-  originalPrice: string;
-  image: string;
+  originalPrice?: string;
+  image: any; // Use `any` for require statements
+  type: 'club' | 'national';
 }
 
 interface CategoryButtonProps {
   title: string;
   value: string;
+  isActive: boolean;
+  onPress: () => void;
 }
 
-interface PromotionCardProps {
-  item: PromotionItem;
-}
+// Import images using require
+const jerseys: Jersey[] = [
+  {
+    id: '1',
+    title: 'Real Madrid Home Jersey',
+    price: '$79.99',
+    originalPrice: '$99.99',
+    image: require('../../assets/realm.jpg'), // Use require for local images
+    type: 'club',
+  },
+  {
+    id: '2',
+    title: 'FC Barcelona Away Jersey',
+    price: '$74.99',
+    originalPrice: '$89.99',
+    image: require('../../assets/Barcelona.jpg'), // Use require for local images
+    type: 'club',
+  },
+  {
+    id: '3',
+    title: 'Brazil National Team Jersey',
+    price: '$69.99',
+    originalPrice: '$89.99',
+    image: require('../../assets/brazil.jpg'), // Use require for local images
+    type: 'national',
+  },
+  {
+    id: '4',
+    title: 'France National Team Jersey',
+    price: '$64.99',
+    originalPrice: '$89.99',
+    image: require('../../assets/france.jpg'), // Use require for local images
+    type: 'national',
+  },
+  {
+    id: '5',
+    title: 'Manchester United Home Jersey',
+    price: '$69.99',
+    originalPrice: '$79.99',
+    image: require('../../assets/manchester.jpg'), // Use require for local images
+    type: 'club',
+  },
+  {
+    id: '6',
+    title: 'Liverpool Third Jersey',
+    price: '$72.99',
+    originalPrice: '$89.99',
+    image: require('../../assets/liverpool.jpg'), // Use require for local images
+    type: 'club',
+  },
+  {
+    id: '7',
+    title: 'Argentina National Team Jersey',
+    price: '$75.99',
+    originalPrice: '$99.99',
+    image: require('../../assets/argentina.jpg'), // Use require for local images
+    type: 'national',
+  },
+  {
+    id: '8',
+    title: 'Bayern Munich Home Jersey',
+    price: '$77.99',
+    originalPrice: '$89.99',
+    image: require('../../assets/bayern.jpg'), // Use require for local images
+    type: 'club',
+  },
+  {
+    id: '9',
+    title: 'Spain National Team Jersey',
+    price: '$69.99',
+    originalPrice: '$89.99',
+    image: require('../../assets/spain.jpg'), // Use require for local images
+    type: 'national',
+  },
+  {
+    id: '10',
+    title: 'Chelsea Away Jersey',
+    price: '$74.99',
+    originalPrice: '$89.99',
+    image: require('../../assets/chelsea.jpg'), // Use require for local images
+    type: 'club',
+  },
+];
 
-const PromotionScreen = () => {
+const JerseyScreen = () => {
   const [activeCategory, setActiveCategory] = useState<string>('all');
-  
-  const promotions: PromotionItem[] = [
-    {
-      id: '1',
-      type: 'hat',
-      title: 'Premium Wizard Hat',
-      description: 'Limited edition wizard hat with magical properties',
-      discount: '25% OFF',
-      price: '$29.99',
-      originalPrice: '$39.99',
-      image: 'https://example.com/wizard-hat.jpg',
-    },
-    {
-      id: '2',
-      type: 'cape',
-      title: 'Royal Velvet Cape',
-      description: 'Luxurious cape made with the finest velvet fabric',
-      discount: '30% OFF',
-      price: '$49.99',
-      originalPrice: '$69.99',
-      image: 'https://example.com/velvet-cape.jpg',
-    },
-    {
-      id: '3',
-      type: 'hat',
-      title: 'Explorer\'s Safari Hat',
-      description: 'Durable and stylish hat for all your adventures',
-      discount: '20% OFF',
-      price: '$24.99',
-      originalPrice: '$29.99',
-      image: 'https://example.com/safari-hat.jpg',
-    },
-    {
-      id: '4',
-      type: 'cape',
-      title: 'Superhero Cape',
-      description: 'Become the hero you were meant to be',
-      discount: '40% OFF',
-      price: '$19.99',
-      originalPrice: '$34.99',
-      image: 'https://example.com/superhero-cape.jpg',
-    },
-  ];
 
-  const filteredPromotions = activeCategory === 'all' 
-    ? promotions 
-    : promotions.filter(item => item.type === activeCategory);
+  const filteredJerseys = activeCategory === 'all'
+    ? jerseys
+    : jerseys.filter(jersey => jersey.type === activeCategory);
 
-  const CategoryButton = ({ title, value }: CategoryButtonProps) => (
+  const CategoryButton = ({ title, value, isActive, onPress }: CategoryButtonProps) => (
     <TouchableOpacity
-      style={[
-        styles.categoryButton,
-        activeCategory === value ? styles.activeCategory : null
-      ]}
-      onPress={() => setActiveCategory(value)}
+      style={[styles.categoryButton, isActive && styles.activeCategoryButton]}
+      onPress={onPress}
     >
-      <Text style={[
-        styles.categoryButtonText,
-        activeCategory === value ? styles.activeCategoryText : null
-      ]}>
+      <Text style={[styles.categoryButtonText, isActive && styles.activeCategoryButtonText]}>
         {title}
       </Text>
     </TouchableOpacity>
   );
 
-  const PromotionCard = ({ item }: PromotionCardProps) => (
-    <TouchableOpacity style={styles.card}>
-      <View style={styles.imageContainer}>
-        {/* Placeholder for image */}
-        <View style={styles.imagePlaceholder}>
-          <Text style={styles.imageText}>{item.type === 'hat' ? '🎩' : '🧣'}</Text>
-        </View>
-        <View style={styles.discountBadge}>
-          <Text style={styles.discountText}>{item.discount}</Text>
-        </View>
-      </View>
-      <View style={styles.cardContent}>
-        <Text style={styles.itemTitle}>{item.title}</Text>
-        <Text style={styles.itemDescription}>{item.description}</Text>
-        <View style={styles.priceContainer}>
-          <Text style={styles.price}>{item.price}</Text>
+  const renderJerseyItem = ({ item }: { item: Jersey }) => (
+    <View style={styles.jerseyCard}>
+      <Image source={item.image} style={styles.jerseyImage} />
+      <Text style={styles.jerseyTitle}>{item.title}</Text>
+      <View style={styles.priceContainer}>
+        <Text style={styles.price}>{item.price}</Text>
+        {item.originalPrice && (
           <Text style={styles.originalPrice}>{item.originalPrice}</Text>
-        </View>
-        <TouchableOpacity style={styles.buyButton}>
-          <Text style={styles.buyButtonText}>Buy Now</Text>
-        </TouchableOpacity>
+        )}
       </View>
-    </TouchableOpacity>
+      <TouchableOpacity style={styles.addToCartButton}>
+        <Text style={styles.addToCartButtonText}>Add to Cart</Text>
+      </TouchableOpacity>
+    </View>
   );
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Special Promotions</Text>
-        <Text style={styles.headerSubtitle}>Exclusive deals on hats and capes</Text>
+        <Text style={styles.headerTitle}>Football Jerseys</Text>
+        <Text style={styles.headerSubtitle}>Exclusive deals on club and national team jerseys</Text>
       </View>
-      
-      <View style={styles.categories}>
-        <CategoryButton title="All Items" value="all" />
-        <CategoryButton title="Hats" value="hat" />
-        <CategoryButton title="Capes" value="cape" />
-      </View>
-      
-      <ScrollView style={styles.promotionList}>
-        {filteredPromotions.map(item => (
-          <PromotionCard key={item.id} item={item} />
-        ))}
+
+      {/* Category Tabs */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryContainer}>
+        <CategoryButton
+          title="All"
+          value="all"
+          isActive={activeCategory === 'all'}
+          onPress={() => setActiveCategory('all')}
+        />
+        <CategoryButton
+          title="Club"
+          value="club"
+          isActive={activeCategory === 'club'}
+          onPress={() => setActiveCategory('club')}
+        />
+        <CategoryButton
+          title="National"
+          value="national"
+          isActive={activeCategory === 'national'}
+          onPress={() => setActiveCategory('national')}
+        />
       </ScrollView>
+
+      {/* Jersey Grid */}
+      <FlatList
+        data={filteredJerseys}
+        renderItem={renderJerseyItem}
+        keyExtractor={(item) => item.id}
+        numColumns={2}
+        contentContainerStyle={styles.jerseyList}
+      />
     </View>
   );
 };
@@ -142,7 +186,7 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 20,
-    backgroundColor: '#6200ee',
+    backgroundColor: '#87CEEB', // Sky blue header
   },
   headerTitle: {
     fontSize: 24,
@@ -154,83 +198,56 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
     marginTop: 5,
   },
-  categories: {
-    flexDirection: 'row',
-    padding: 15,
+  categoryContainer: {
+    paddingVertical: 8,
     backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: '#eaeaea',
   },
   categoryButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    marginRight: 10,
-    borderRadius: 20,
+    paddingVertical: 8, // Adjusted padding for compact tabs
+    paddingHorizontal: 16, // Adjusted padding for compact tabs
+    marginHorizontal: 5,
+    borderRadius: 15,
     backgroundColor: '#f0f0f0',
   },
-  activeCategory: {
-    backgroundColor: '#6200ee',
+  activeCategoryButton: {
+    backgroundColor: '#87CEEB', // Sky blue for active category
   },
   categoryButtonText: {
     fontSize: 14,
     color: '#333',
   },
-  activeCategoryText: {
+  activeCategoryButtonText: {
     color: 'white',
   },
-  promotionList: {
-    flex: 1,
-    padding: 15,
+  jerseyList: {
+    padding: 10,
   },
-  card: {
+  jerseyCard: {
+    flex: 1,
+    margin: 5,
     backgroundColor: 'white',
     borderRadius: 10,
-    marginBottom: 15,
+    padding: 10,
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    overflow: 'hidden',
   },
-  imageContainer: {
-    position: 'relative',
-  },
-  imagePlaceholder: {
+  jerseyImage: {
+    width: '100%',
     height: 150,
-    backgroundColor: '#e0e0e0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  imageText: {
-    fontSize: 50,
-  },
-  discountBadge: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: '#ff4081',
-    borderRadius: 15,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
-  discountText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 12,
-  },
-  cardContent: {
-    padding: 15,
-  },
-  itemTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  itemDescription: {
-    fontSize: 14,
-    color: '#666',
+    borderRadius: 10,
     marginBottom: 10,
+  },
+  jerseyTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 5,
   },
   priceContainer: {
     flexDirection: 'row',
@@ -238,26 +255,27 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   price: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#6200ee',
-    marginRight: 8,
+    color: '#87CEEB', // Sky blue for price
+    marginRight: 5,
   },
   originalPrice: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#999',
     textDecorationLine: 'line-through',
   },
-  buyButton: {
-    backgroundColor: '#6200ee',
-    padding: 12,
+  addToCartButton: {
+    backgroundColor: '#87CEEB', // Sky blue for button
+    padding: 10,
     borderRadius: 5,
+    width: '100%',
     alignItems: 'center',
   },
-  buyButtonText: {
+  addToCartButtonText: {
     color: 'white',
     fontWeight: 'bold',
   },
 });
 
-export default PromotionScreen;
+export default JerseyScreen;
